@@ -1,0 +1,114 @@
+// Schema VeilleEducation — surveillance de sources officielles education Burkina Faso
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------------------------------------------------------------------------
+// Sources surveillees
+// ---------------------------------------------------------------------------
+
+enum SourceType {
+  WEBSITE
+  FACEBOOK_PAGE
+  RSS
+}
+
+model Source {
+  id          String     @id @default(cuid())
+  name        String
+  url         String
+  type        SourceType @default(WEBSITE)
+  // Selecteur CSS pour cibler la liste des communiques (ex: "article", ".post")
+  itemSelector String?
+  // Selecteur CSS pour le titre
+  titleSelector String?
+  // Selecteur CSS pour le lien
+  linkSelector  String?
+  // Selecteur CSS pour la date
+  dateSelector  String?
+  // Selecteur CSS pour le contenu
+  contentSelector String?
+  // Active ou desactive
+  isActive    Boolean    @default(true)
+  category    String?    // ex: "bourses", "examens", "concours", "calendrier"
+
+  communiques Communique[]
+  scrapeLogs  ScrapeLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Communiques detectes
+// ---------------------------------------------------------------------------
+
+enum CommuniqueStatus {
+  NEW
+  SUMMARIZED
+  SENT
+  ARCHIVED
+  ERROR
+}
+
+model Communique {
+  id        String   @id @default(cuid())
+  sourceId  String
+  source    Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  // URL unique du communique — sert de cle anti-doublon
+  url       String   @unique
+
+  title        String
+  rawContent   String?  // contenu brut scrape
+  publishedAt  DateTime?
+  detectedAt   DateTime @default(now())
+
+  // Resume genere par IA
+  summary         String?
+  // Personnes/cibles concernees (CEP, BEPC, Bac, bourses...)
+  targetAudience  String?
+  // Dates importantes extraites
+  importantDates  String?
+  // Pieces a fournir
+  requiredDocs    String?
+
+  status CommuniqueStatus @default(NEW)
+
+  // E-mail envoye ?
+  emailSent   Boolean  @default(false)
+  emailSentAt DateTime?
+
+  // Metadonnees brutes (JSON)
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sourceId])
+  @@index([status])
+  @@index([detectedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Journal des operations
+// ---------------------------------------------------------------------------
+
+model ScrapeLog {
+  id        String   @id @default(cuid())
+  sourceId  String?
+  source    Source?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  status    String   // "success", "error"
+  message   String?
+  newCount  Int      @default(0)
+  duration  Int?     // duree en ms
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([sourceId])
+}
