@@ -33,7 +33,7 @@ NOTIFICATION_EMAIL=kiemamahama@gmail.com
 OPENAI_API_KEY=sk-...
 
 # Fréquence (minutes)
-SCRAPE_INTERVAL_MINUTES=60
+SCRAPE_INTERVAL_MINUTES=300
 ```
 
 > Pour Gmail : créez un [mot de passe d'application](https://myaccount.google.com/apppasswords).

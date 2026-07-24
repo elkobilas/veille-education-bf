@@ -7,6 +7,13 @@ export const metadata: Metadata = {
     "Surveillance automatique des communiqués officiels du secteur éducatif burkinabè.",
 };
 
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f5ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#121813" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {
