@@ -1,3 +1,10 @@
 # Forcer npm install au lieu de npm ci (contourne le bug "Invalid Version" de npm 10)
 [phases.install]
 cmds = ["npm install --legacy-peer-deps"]
+
+# Générer Prisma client et créer la base de données
+[phases.build]
+cmds = ["npx prisma generate", "npx prisma db push --accept-data-loss", "npx tsx prisma/seed.ts", "npm run build"]
+
+[phases.deploy]
+cmds = ["npm start"]
